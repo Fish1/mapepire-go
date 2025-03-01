@@ -47,4 +47,16 @@ func TestConnection(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+
+	query = job.Query("insert into JENDERS1.MYTABLE1 values (1, 2, 3, 4, 5)")
+	err = query.Execute()
+	if err != nil {
+		t.Error(err)
+	}
+
+	query = job.Query("select * from JENDERS1.MYTABLE1")
+	err = query.Execute()
+	if err != nil {
+		t.Error(err)
+	}
 }

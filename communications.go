@@ -41,7 +41,7 @@ func createQueryRequest(sql string) ([]byte, error) {
 		Type:       "sql",
 		Sql:        sql,
 		Terse:      false,
-		Rows:       1,
+		Rows:       50,
 		Parameters: []interface{}{},
 	})
 }
