@@ -2,7 +2,6 @@ package mapepirego
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type Query struct {
@@ -10,29 +9,57 @@ type Query struct {
 	sql string
 }
 
-func (query *Query) Execute() error {
-	queryRequest, err := createQueryRequest(query.sql)
+func (query *Query) ExecuteSelect() (*SelectResult, error) {
+	data, err := query.execute()
+
+	var result SelectResult
+	err = json.Unmarshal(data, &result)
 	if err != nil {
-		return err
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (query *Query) ExecuteInsert() (*InsertResult, error) {
+	data, err := query.execute()
+
+	var result InsertResult
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (query *Query) ExecuteCreate() (*CreateResult, error) {
+	data, err := query.execute()
+
+	var result CreateResult
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, nil
+}
+
+func (query *Query) execute() ([]byte, error) {
+	queryRequest, err := createSqlRequest(query.job.getNextQueryID(), query.sql)
+	if err != nil {
+		return nil, err
 	}
 
 	err = query.job.send(queryRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data, err := query.job.receive()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var queryResponse interface{}
-	err = json.Unmarshal(data, &queryResponse)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println(queryResponse)
-
-	return nil
+	return data, nil
 }

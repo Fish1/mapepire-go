@@ -22,9 +22,15 @@ type ConnectionOptions struct {
 }
 
 type Job struct {
-	connection *websocket.Conn
-	timeout    context.CancelFunc
-	id         string
+	connection    *websocket.Conn
+	timeout       context.CancelFunc
+	id            string
+	next_query_id int64
+}
+
+func (job *Job) getNextQueryID() int64 {
+	job.next_query_id += 1
+	return job.next_query_id
 }
 
 func (job *Job) send(buffer []byte) error {
@@ -54,7 +60,7 @@ func (job *Job) Query(sql string) Query {
 	}
 }
 
-func (job *Job) Connect(options ConnectionOptions) error {
+func (job *Job) Connect(options ConnectionOptions) (*ConnectResponse, error) {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -82,37 +88,37 @@ func (job *Job) Connect(options ConnectionOptions) error {
 	var err error
 	job.connection, _, err = websocket.Dial(ctx, url, dialOptions)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	connectRequest, err := createConnectRequest()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = job.send(connectRequest)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	data, err := job.receive()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	var connectResponse connectResponse
+	var connectResponse ConnectResponse
 	err = json.Unmarshal(data, &connectResponse)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if connectResponse.Success == false {
-		return errors.New("connection response: success = false")
+		return nil, errors.New("connection response: success = false")
 	}
 
 	job.id = connectResponse.Id
 
-	return nil
+	return &connectResponse, nil
 }
 
 func (job *Job) Close() error {

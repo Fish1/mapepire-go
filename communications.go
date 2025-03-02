@@ -1,6 +1,9 @@
 package mapepirego
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"strconv"
+)
 
 type connectRequest struct {
 	Id          string `json:"id"`
@@ -19,14 +22,14 @@ func createConnectRequest() ([]byte, error) {
 	})
 }
 
-type connectResponse struct {
+type ConnectResponse struct {
 	Id             string `json:"id"`
 	Job            string `json:"job"`
 	Success        bool   `json:"success"`
 	Execution_Time int    `json:"execution_time"`
 }
 
-type queryRequest struct {
+type sqlRequest struct {
 	Id         string        `json:"id"`
 	Type       string        `json:"type"`
 	Sql        string        `json:"sql"`
@@ -35,9 +38,9 @@ type queryRequest struct {
 	Parameters []interface{} `json:"parameters"`
 }
 
-func createQueryRequest(sql string) ([]byte, error) {
-	return json.Marshal(queryRequest{
-		Id:         "1",
+func createSqlRequest(id int64, sql string) ([]byte, error) {
+	return json.Marshal(sqlRequest{
+		Id:         strconv.FormatInt(id, 36),
 		Type:       "sql",
 		Sql:        sql,
 		Terse:      false,
@@ -46,7 +49,7 @@ func createQueryRequest(sql string) ([]byte, error) {
 	})
 }
 
-type queryResultColumnMetaData struct {
+type SelectResultColumnMetaData struct {
 	DisplaySize int    `json:"display_size"`
 	Label       string `json:"label"`
 	Name        string `json:"name"`
@@ -55,7 +58,7 @@ type queryResultColumnMetaData struct {
 	Scale       int    `json:"scale"`
 }
 
-type queryResultParameterDetail struct {
+type SelectResultParameterDetail struct {
 	Type      string `json:"type"`
 	Mode      string `json:"mode"`
 	Precision int    `json:"precision"`
@@ -63,22 +66,39 @@ type queryResultParameterDetail struct {
 	Name      string `json:"name"`
 }
 
-type queryResultMetaData struct {
-	ColumnCount int                          `json:"column_count"`
-	Columns     []queryResultColumnMetaData  `json:"columns"`
-	Parameters  []queryResultParameterDetail `json:"parameters"`
-	Job         string                       `json:"job"`
+type SelectResultMetaData struct {
+	ColumnCount int                           `json:"column_count"`
+	Columns     []SelectResultColumnMetaData  `json:"columns"`
+	Parameters  []SelectResultParameterDetail `json:"parameters"`
+	Job         string                        `json:"job"`
 }
 
-type queryResultOutputParms struct {
+type SelectResultOutputParms struct {
 }
 
-type queryResult struct {
-	MetaData       queryResultMetaData    `json:"metadata"`
-	IsDone         bool                   `json:"is_done"`
-	HasResults     bool                   `json:"has_results"`
-	UpdateCount    int                    `json:"update_count"`
-	Data           []interface{}          `json:"data"`
-	ParameterCount int                    `json:"parameter_count"`
-	OutputParams   queryResultOutputParms `json:"output_parms"`
+type SelectResult struct {
+	MetaData       SelectResultMetaData    `json:"metadata"`
+	IsDone         bool                    `json:"is_done"`
+	HasResults     bool                    `json:"has_results"`
+	UpdateCount    int                     `json:"update_count"`
+	Data           []interface{}           `json:"data"`
+	ParameterCount int                     `json:"parameter_count"`
+	OutputParams   SelectResultOutputParms `json:"output_parms"`
+}
+
+type InsertResult struct {
+	Id            string `json:"id"`
+	ExecutionTime int    `json:"execution_time"`
+	HasResults    bool   `json:"has_results"`
+	Success       bool   `json:"success"`
+	UpdateCount   int    `json:"update_count"`
+}
+
+type CreateResult struct {
+	Id            string `json:"id"`
+	Success       bool   `json:"success"`
+	UpdateCount   int    `json:"update_count"`
+	Error         string `json:"error"`
+	ExecutionTime int    `json:"execution_time"`
+	HasResults    bool   `json:"has_results"`
 }
