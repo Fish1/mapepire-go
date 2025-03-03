@@ -13,9 +13,9 @@ type connectRequest struct {
 	// Props       string `json:"props"`
 }
 
-func createConnectRequest() ([]byte, error) {
+func createConnectRequest(id int64) ([]byte, error) {
 	return json.Marshal(connectRequest{
-		Id:          "1",
+		Id:          strconv.FormatInt(id, 36),
 		Type:        "connect",
 		Technique:   "tcp",
 		Application: "mapepire-go",
@@ -76,12 +76,13 @@ type SelectResultMetaData struct {
 type SelectResultOutputParms struct {
 }
 
-type SelectResult struct {
+type SelectResult[data any] struct {
+	Id             string                  `json:"id"`
 	MetaData       SelectResultMetaData    `json:"metadata"`
 	IsDone         bool                    `json:"is_done"`
 	HasResults     bool                    `json:"has_results"`
 	UpdateCount    int                     `json:"update_count"`
-	Data           []interface{}           `json:"data"`
+	Data           []data                  `json:"data"`
 	ParameterCount int                     `json:"parameter_count"`
 	OutputParams   SelectResultOutputParms `json:"output_parms"`
 }

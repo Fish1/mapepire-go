@@ -60,7 +60,7 @@ func (job *Job) Query(sql string) Query {
 	}
 }
 
-func (job *Job) Connect(options ConnectionOptions) (*ConnectResponse, error) {
+func (job *Job) Connect(options ConnectionOptions) (ConnectResponse, error) {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
@@ -88,37 +88,37 @@ func (job *Job) Connect(options ConnectionOptions) (*ConnectResponse, error) {
 	var err error
 	job.connection, _, err = websocket.Dial(ctx, url, dialOptions)
 	if err != nil {
-		return nil, err
+		return ConnectResponse{}, err
 	}
 
-	connectRequest, err := createConnectRequest()
+	connectRequest, err := createConnectRequest(job.getNextQueryID())
 	if err != nil {
-		return nil, err
+		return ConnectResponse{}, err
 	}
 
 	err = job.send(connectRequest)
 	if err != nil {
-		return nil, err
+		return ConnectResponse{}, err
 	}
 
 	data, err := job.receive()
 	if err != nil {
-		return nil, err
+		return ConnectResponse{}, err
 	}
 
 	var connectResponse ConnectResponse
 	err = json.Unmarshal(data, &connectResponse)
 	if err != nil {
-		return nil, err
+		return ConnectResponse{}, err
 	}
 
 	if connectResponse.Success == false {
-		return nil, errors.New("connection response: success = false")
+		return ConnectResponse{}, errors.New("connection response: success = false")
 	}
 
 	job.id = connectResponse.Id
 
-	return &connectResponse, nil
+	return connectResponse, nil
 }
 
 func (job *Job) Close() error {

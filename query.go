@@ -9,16 +9,15 @@ type Query struct {
 	sql string
 }
 
-func (query *Query) ExecuteSelect() (*SelectResult, error) {
+func (query *Query) ExecuteSelect(into any) error {
 	data, err := query.execute()
 
-	var result SelectResult
-	err = json.Unmarshal(data, &result)
+	err = json.Unmarshal(data, into)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &result, nil
+	return nil
 }
 
 func (query *Query) ExecuteInsert() (*InsertResult, error) {
