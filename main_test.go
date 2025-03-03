@@ -59,15 +59,10 @@ func TestSelect(t *testing.T) {
 		t.Error(err)
 	}
 
-	job := Job{}
-	connectResponse, err := job.Connect(options)
+	job, connectResponse, err := CreateJob(options)
 	defer job.Close()
-	if err != nil {
+	if err != nil || connectResponse.Success == false {
 		t.Error(err)
-	}
-
-	if connectResponse.Success == false {
-		t.Error("connection unsuccessfull")
 	}
 
 	query := job.Query("create table JENDERS1.MYTABLE2 ( a int, b char(10), c varchar(64))")

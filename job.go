@@ -28,6 +28,15 @@ type Job struct {
 	next_query_id int64
 }
 
+func CreateJob(options ConnectionOptions) (*Job, ConnectResponse, error) {
+	job := Job{}
+	connectResponse, err := job.Connect(options)
+	if err != nil {
+		return nil, connectResponse, err
+	}
+	return &job, connectResponse, nil
+}
+
 func (job *Job) getNextQueryID() int64 {
 	job.next_query_id += 1
 	return job.next_query_id
