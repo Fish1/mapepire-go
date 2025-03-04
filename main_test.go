@@ -14,18 +14,17 @@ func TestConnection(t *testing.T) {
 
 	var err error
 
-	options := ConnectionOptions{
-		InsecureSkipVerify: true,
-	}
-
-	options.Host, _ = os.LookupEnv("host")
-	options.User, _ = os.LookupEnv("user")
-	options.Pass, _ = os.LookupEnv("pass")
-
-	port, _ := os.LookupEnv("port")
-	options.Port, err = strconv.Atoi(port)
+	port, err := strconv.Atoi(os.Getenv("port"))
 	if err != nil {
 		t.Error(err)
+	}
+
+	options := ConnectionOptions{
+		Host:               os.Getenv("host"),
+		User:               os.Getenv("user"),
+		Pass:               os.Getenv("pass"),
+		Port:               port,
+		InsecureSkipVerify: true,
 	}
 
 	job := Job{}
@@ -45,18 +44,17 @@ func TestSelect(t *testing.T) {
 
 	var err error
 
-	options := ConnectionOptions{
-		InsecureSkipVerify: true,
-	}
-
-	options.Host, _ = os.LookupEnv("host")
-	options.User, _ = os.LookupEnv("user")
-	options.Pass, _ = os.LookupEnv("pass")
-
-	port, _ := os.LookupEnv("port")
-	options.Port, err = strconv.Atoi(port)
+	port, err := strconv.Atoi(os.Getenv("port"))
 	if err != nil {
 		t.Error(err)
+	}
+
+	options := ConnectionOptions{
+		Host:               os.Getenv("host"),
+		User:               os.Getenv("user"),
+		Pass:               os.Getenv("pass"),
+		Port:               port,
+		InsecureSkipVerify: true,
 	}
 
 	job, connectResponse, err := CreateJob(options)
