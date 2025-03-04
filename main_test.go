@@ -3,7 +3,6 @@ package mapepirego
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -14,21 +13,13 @@ func TestConnection(t *testing.T) {
 
 	var err error
 
-	port, err := strconv.Atoi(os.Getenv("port"))
-	if err != nil {
-		t.Error(err)
-	}
-
-	options := ConnectionOptions{
-		Host:               os.Getenv("host"),
-		User:               os.Getenv("user"),
-		Pass:               os.Getenv("pass"),
-		Port:               port,
-		InsecureSkipVerify: true,
-	}
-
-	job := Job{}
-	connectResponse, err := job.Connect(options)
+	job, connectResponse, err := NewJob(
+		os.Getenv("host"),
+		os.Getenv("port"),
+		os.Getenv("user"),
+		os.Getenv("pass"),
+		WithInsecureSkipVerify(),
+	)
 	defer job.Close()
 	if err != nil {
 		t.Error(err)
@@ -44,26 +35,26 @@ func TestSelect(t *testing.T) {
 
 	var err error
 
-	port, err := strconv.Atoi(os.Getenv("port"))
+	job, connectResponse, err := NewJob(
+		os.Getenv("host"),
+		os.Getenv("port"),
+		os.Getenv("user"),
+		os.Getenv("pass"),
+		WithInsecureSkipVerify(),
+	)
+	defer job.Close()
 	if err != nil {
 		t.Error(err)
 	}
-
-	options := ConnectionOptions{
-		Host:               os.Getenv("host"),
-		User:               os.Getenv("user"),
-		Pass:               os.Getenv("pass"),
-		Port:               port,
-		InsecureSkipVerify: true,
+	if connectResponse.Success == false {
+		t.Error("failed to connect to server")
 	}
 
-	job, connectResponse, err := CreateJob(options)
-	defer job.Close()
-	if err != nil || connectResponse.Success == false {
-		t.Error(err)
-	}
+	testSchema := os.Getenv("test_schema")
+	testTable := os.Getenv("test_table")
 
-	query := job.Query("create table JENDERS1.MYTABLE2 ( a int, b char(10), c varchar(64))")
+	sqlString := fmt.Sprintf("create table %s.%s ( a int, b char(10), c varchar(64))", testSchema, testTable)
+	query := job.Query(sqlString)
 	_, err = query.ExecuteCreate()
 	if err != nil {
 		t.Error(err)
@@ -74,10 +65,31 @@ func TestSelect(t *testing.T) {
 		B string
 		C string
 	}]
-	query = job.Query("select * from JENDERS1.MYTABLE2")
+
+	sqlString = fmt.Sprintf("select * from %s.%s", testSchema, testTable)
+	query = job.Query(sqlString)
 	err = query.ExecuteSelect(&selectResult)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(selectResult)
+	fmt.Printf("%+v\n\n", selectResult)
+
+	sqlString = fmt.Sprintf("insert into %s.%s values (5, '5', '6'), (6, '7', '8')", testSchema, testTable)
+	query = job.Query(sqlString)
+	insertResult, err := query.ExecuteInsert()
+	if err != nil {
+		t.Error(err)
+	}
+	if insertResult.UpdateCount != 2 {
+		t.Error("insert didn't update 2 rows")
+	}
+	fmt.Printf("%+v\n", insertResult)
+
+	sqlString = fmt.Sprintf("delete from %s.%s where a = 6", testSchema, testTable)
+	query = job.Query(sqlString)
+	deleteResult, err := query.ExecuteDelete()
+	if err != nil {
+		t.Error(err)
+	}
+	fmt.Println(*deleteResult)
 }

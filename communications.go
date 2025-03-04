@@ -78,6 +78,7 @@ type SelectResultOutputParms struct {
 
 type SelectResult[data any] struct {
 	Id             string                  `json:"id"`
+	Success        bool                    `json:"success"`
 	MetaData       SelectResultMetaData    `json:"metadata"`
 	IsDone         bool                    `json:"is_done"`
 	HasResults     bool                    `json:"has_results"`
@@ -89,17 +90,27 @@ type SelectResult[data any] struct {
 
 type InsertResult struct {
 	Id            string `json:"id"`
-	ExecutionTime int    `json:"execution_time"`
-	HasResults    bool   `json:"has_results"`
 	Success       bool   `json:"success"`
+	HasResults    bool   `json:"has_results"`
 	UpdateCount   int    `json:"update_count"`
+	ExecutionTime int    `json:"execution_time"`
+	Error         string `json:"error"`
 }
 
 type CreateResult struct {
 	Id            string `json:"id"`
 	Success       bool   `json:"success"`
-	UpdateCount   int    `json:"update_count"`
-	Error         string `json:"error"`
-	ExecutionTime int    `json:"execution_time"`
 	HasResults    bool   `json:"has_results"`
+	UpdateCount   int    `json:"update_count"`
+	ExecutionTime int    `json:"execution_time"`
+	Error         string `json:"error"`
+}
+
+type DeleteResult struct {
+	Id            string `json:"id"`
+	Success       bool   `json:"success"`
+	HasResults    bool   `json:"has_results"`
+	UpdateCount   int    `json:"update_count"`
+	ExecutionTime int    `json:"execution_time"`
+	Error         string `json:"error"`
 }

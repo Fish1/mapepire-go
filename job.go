@@ -8,32 +8,61 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/coder/websocket"
 )
 
-type ConnectionOptions struct {
-	Host               string
-	Port               int
-	User               string
-	Pass               string
-	InsecureSkipVerify bool
+type JobOption func(*Job)
+
+func WithInsecureSkipVerify() JobOption {
+	return func(job *Job) {
+		job.insecureSkipVerify = true
+	}
+}
+
+func WithFetchCertificate() JobOption {
+	return func(job *Job) {
+		job.fetchCertificate()
+	}
 }
 
 type Job struct {
-	connection    *websocket.Conn
-	timeout       context.CancelFunc
-	id            string
-	next_query_id int64
+	connection         *websocket.Conn
+	timeout            context.CancelFunc
+	id                 string
+	next_query_id      int64
+	host               string
+	port               string
+	user               string
+	pass               string
+	certificate        string
+	insecureSkipVerify bool
 }
 
-func CreateJob(options ConnectionOptions) (*Job, ConnectResponse, error) {
-	job := Job{}
-	connectResponse, err := job.Connect(options)
+func NewJob(host string, port string, user string, pass string, opts ...JobOption) (*Job, ConnectResponse, error) {
+	_, err := strconv.Atoi(port)
+	if err != nil {
+		return nil, ConnectResponse{}, errors.New("port must be a valid number")
+	}
+
+	job := Job{
+		host: host,
+		port: port,
+		user: user,
+		pass: pass,
+	}
+
+	for _, opt := range opts {
+		opt(&job)
+	}
+
+	connectResponse, err := job.Connect()
 	if err != nil {
 		return nil, connectResponse, err
 	}
+
 	return &job, connectResponse, nil
 }
 
@@ -69,11 +98,11 @@ func (job *Job) Query(sql string) Query {
 	}
 }
 
-func (job *Job) Connect(options ConnectionOptions) (ConnectResponse, error) {
+func (job *Job) Connect() (ConnectResponse, error) {
 	httpClient := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: options.InsecureSkipVerify,
+				InsecureSkipVerify: job.insecureSkipVerify,
 			},
 		},
 	}
@@ -81,7 +110,7 @@ func (job *Job) Connect(options ConnectionOptions) (ConnectResponse, error) {
 	var ctx context.Context
 	ctx, job.timeout = context.WithTimeout(context.Background(), time.Minute)
 
-	authBuffer := []byte(fmt.Sprintf("%s:%s", options.User, options.Pass))
+	authBuffer := []byte(fmt.Sprintf("%s:%s", job.user, job.pass))
 	auth := base64.StdEncoding.EncodeToString(authBuffer)
 
 	header := http.Header{}
@@ -92,7 +121,7 @@ func (job *Job) Connect(options ConnectionOptions) (ConnectResponse, error) {
 		HTTPClient: httpClient,
 	}
 
-	url := fmt.Sprintf("wss://%s:%d/db/", options.Host, options.Port)
+	url := fmt.Sprintf("wss://%s:%s/db/", job.host, job.port)
 
 	var err error
 	job.connection, _, err = websocket.Dial(ctx, url, dialOptions)
@@ -132,4 +161,19 @@ func (job *Job) Connect(options ConnectionOptions) (ConnectResponse, error) {
 
 func (job *Job) Close() error {
 	return job.connection.CloseNow()
+}
+
+func (job *Job) fetchCertificate() error {
+	conf := &tls.Config{
+		InsecureSkipVerify: true,
+	}
+	url := fmt.Sprintf("%s:%s", job.host, job.port)
+	tlsConnection, err := tls.Dial("tcp", url, conf)
+	if err != nil {
+		return err
+	}
+	defer tlsConnection.Close()
+
+	job.certificate = string(tlsConnection.ConnectionState().PeerCertificates[0].Raw)
+	return nil
 }

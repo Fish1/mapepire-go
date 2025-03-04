@@ -44,6 +44,18 @@ func (query *Query) ExecuteCreate() (*CreateResult, error) {
 	return &result, nil
 }
 
+func (query *Query) ExecuteDelete() (*interface{}, error) {
+	data, err := query.execute()
+
+	var result interface{}
+	err = json.Unmarshal(data, &result)
+	if err != nil {
+		return nil, err
+	}
+
+	return &result, err
+}
+
 func (query *Query) execute() ([]byte, error) {
 	queryRequest, err := createSqlRequest(query.job.getNextQueryID(), query.sql)
 	if err != nil {
