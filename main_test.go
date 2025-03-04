@@ -55,41 +55,44 @@ func TestSelect(t *testing.T) {
 
 	sqlString := fmt.Sprintf("create table %s.%s ( a int, b char(10), c varchar(64))", testSchema, testTable)
 	query := job.Query(sqlString)
-	_, err = query.ExecuteCreate()
+	var createResult Result
+	err = query.Execute(&createResult)
 	if err != nil {
 		t.Error(err)
 	}
+	fmt.Printf("create: %+v\n\n", createResult)
 
-	var selectResult SelectResult[struct {
+	var selectResult ResultWithData[struct {
 		A float64
 		B string
 		C string
 	}]
-
 	sqlString = fmt.Sprintf("select * from %s.%s", testSchema, testTable)
 	query = job.Query(sqlString)
 	err = query.ExecuteSelect(&selectResult)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Printf("%+v\n\n", selectResult)
+	fmt.Printf("select: %+v\n\n", selectResult)
 
 	sqlString = fmt.Sprintf("insert into %s.%s values (5, '5', '6'), (6, '7', '8')", testSchema, testTable)
 	query = job.Query(sqlString)
-	insertResult, err := query.ExecuteInsert()
+	var insertResult Result
+	err = query.Execute(&insertResult)
 	if err != nil {
 		t.Error(err)
 	}
 	if insertResult.UpdateCount != 2 {
 		t.Error("insert didn't update 2 rows")
 	}
-	fmt.Printf("%+v\n", insertResult)
+	fmt.Printf("insert: %+v\n\n", insertResult)
 
 	sqlString = fmt.Sprintf("delete from %s.%s where a = 6", testSchema, testTable)
 	query = job.Query(sqlString)
-	deleteResult, err := query.ExecuteDelete()
+	var deleteResult Result
+	err = query.Execute(&deleteResult)
 	if err != nil {
 		t.Error(err)
 	}
-	fmt.Println(*deleteResult)
+	fmt.Printf("delete: %+v\n\n", deleteResult)
 }

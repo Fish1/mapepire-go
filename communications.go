@@ -49,7 +49,32 @@ func createSqlRequest(id int64, sql string) ([]byte, error) {
 	})
 }
 
-type SelectResultColumnMetaData struct {
+type Result struct {
+	Id            string `json:"id"`
+	Success       bool   `json:"success"`
+	HasResults    bool   `json:"has_results"`
+	UpdateCount   int    `json:"update_count"`
+	ExecutionTime int    `json:"execution_time"`
+	Error         string `json:"error"`
+}
+
+type ResultWithData[data any] struct {
+	Id            string `json:"id"`
+	Success       bool   `json:"success"`
+	HasResults    bool   `json:"has_results"`
+	UpdateCount   int    `json:"update_count"`
+	ExecutionTime int    `json:"execution_time"`
+
+	MetaData       ResultMetaData          `json:"metadata"`
+	IsDone         bool                    `json:"is_done"`
+	Data           []data                  `json:"data"`
+	ParameterCount int                     `json:"parameter_count"`
+	OutputParams   SelectResultOutputParms `json:"output_parms"`
+
+	Error string `json:"error"`
+}
+
+type ResultColumnMetaData struct {
 	DisplaySize int    `json:"display_size"`
 	Label       string `json:"label"`
 	Name        string `json:"name"`
@@ -58,7 +83,7 @@ type SelectResultColumnMetaData struct {
 	Scale       int    `json:"scale"`
 }
 
-type SelectResultParameterDetail struct {
+type ResultParameterDetail struct {
 	Type      string `json:"type"`
 	Mode      string `json:"mode"`
 	Precision int    `json:"precision"`
@@ -66,51 +91,12 @@ type SelectResultParameterDetail struct {
 	Name      string `json:"name"`
 }
 
-type SelectResultMetaData struct {
-	ColumnCount int                           `json:"column_count"`
-	Columns     []SelectResultColumnMetaData  `json:"columns"`
-	Parameters  []SelectResultParameterDetail `json:"parameters"`
-	Job         string                        `json:"job"`
+type ResultMetaData struct {
+	ColumnCount int                     `json:"column_count"`
+	Columns     []ResultColumnMetaData  `json:"columns"`
+	Parameters  []ResultParameterDetail `json:"parameters"`
+	Job         string                  `json:"job"`
 }
 
 type SelectResultOutputParms struct {
-}
-
-type SelectResult[data any] struct {
-	Id             string                  `json:"id"`
-	Success        bool                    `json:"success"`
-	MetaData       SelectResultMetaData    `json:"metadata"`
-	IsDone         bool                    `json:"is_done"`
-	HasResults     bool                    `json:"has_results"`
-	UpdateCount    int                     `json:"update_count"`
-	Data           []data                  `json:"data"`
-	ParameterCount int                     `json:"parameter_count"`
-	OutputParams   SelectResultOutputParms `json:"output_parms"`
-}
-
-type InsertResult struct {
-	Id            string `json:"id"`
-	Success       bool   `json:"success"`
-	HasResults    bool   `json:"has_results"`
-	UpdateCount   int    `json:"update_count"`
-	ExecutionTime int    `json:"execution_time"`
-	Error         string `json:"error"`
-}
-
-type CreateResult struct {
-	Id            string `json:"id"`
-	Success       bool   `json:"success"`
-	HasResults    bool   `json:"has_results"`
-	UpdateCount   int    `json:"update_count"`
-	ExecutionTime int    `json:"execution_time"`
-	Error         string `json:"error"`
-}
-
-type DeleteResult struct {
-	Id            string `json:"id"`
-	Success       bool   `json:"success"`
-	HasResults    bool   `json:"has_results"`
-	UpdateCount   int    `json:"update_count"`
-	ExecutionTime int    `json:"execution_time"`
-	Error         string `json:"error"`
 }

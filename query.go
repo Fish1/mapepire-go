@@ -20,40 +20,22 @@ func (query *Query) ExecuteSelect(into any) error {
 	return nil
 }
 
-func (query *Query) ExecuteInsert() (*InsertResult, error) {
+func (query *Query) Execute(into any) error {
 	data, err := query.execute()
-
-	var result InsertResult
-	err = json.Unmarshal(data, &result)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &result, nil
-}
-
-func (query *Query) ExecuteCreate() (*CreateResult, error) {
-	data, err := query.execute()
-
-	var result CreateResult
-	err = json.Unmarshal(data, &result)
-	if err != nil {
-		return nil, err
+	if into == nil {
+		return nil
 	}
 
-	return &result, nil
-}
-
-func (query *Query) ExecuteDelete() (*interface{}, error) {
-	data, err := query.execute()
-
-	var result interface{}
-	err = json.Unmarshal(data, &result)
+	err = json.Unmarshal(data, into)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &result, err
+	return nil
 }
 
 func (query *Query) execute() ([]byte, error) {

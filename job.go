@@ -160,7 +160,10 @@ func (job *Job) Connect() (ConnectResponse, error) {
 }
 
 func (job *Job) Close() error {
-	return job.connection.CloseNow()
+	if job.connection != nil {
+		return job.connection.CloseNow()
+	}
+	return nil
 }
 
 func (job *Job) fetchCertificate() error {
