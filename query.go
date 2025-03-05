@@ -5,19 +5,10 @@ import (
 )
 
 type Query struct {
-	job *Job
-	sql string
-}
-
-func (query *Query) ExecuteSelect(into any) error {
-	data, err := query.execute()
-
-	err = json.Unmarshal(data, into)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	job           *Job
+	sql           string
+	int_params    []int
+	string_params []string
 }
 
 func (query *Query) Execute(into any) error {
@@ -30,7 +21,7 @@ func (query *Query) Execute(into any) error {
 		return nil
 	}
 
-	err = json.Unmarshal(data, into)
+	err = json.Unmarshal(data, &into)
 	if err != nil {
 		return err
 	}

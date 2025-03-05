@@ -53,23 +53,23 @@ func TestSelect(t *testing.T) {
 	testSchema := os.Getenv("test_schema")
 	testTable := os.Getenv("test_table")
 
-	sqlString := fmt.Sprintf("create table %s.%s ( a int, b char(10), c varchar(64))", testSchema, testTable)
+	sqlString := fmt.Sprintf("create table %s.%s (a int, b char(10), c varchar(64))", testSchema, testTable)
 	query := job.Query(sqlString)
-	var createResult Result
+	var createResult ResultWithoutData
 	err = query.Execute(&createResult)
 	if err != nil {
 		t.Error(err)
 	}
 	fmt.Printf("create: %+v\n\n", createResult)
 
-	var selectResult ResultWithData[struct {
+	var selectResult Result[struct {
 		A float64
 		B string
 		C string
 	}]
 	sqlString = fmt.Sprintf("select * from %s.%s", testSchema, testTable)
 	query = job.Query(sqlString)
-	err = query.ExecuteSelect(&selectResult)
+	err = query.Execute(&selectResult)
 	if err != nil {
 		t.Error(err)
 	}
@@ -77,7 +77,7 @@ func TestSelect(t *testing.T) {
 
 	sqlString = fmt.Sprintf("insert into %s.%s values (5, '5', '6'), (6, '7', '8')", testSchema, testTable)
 	query = job.Query(sqlString)
-	var insertResult Result
+	var insertResult ResultWithoutData
 	err = query.Execute(&insertResult)
 	if err != nil {
 		t.Error(err)
@@ -89,7 +89,7 @@ func TestSelect(t *testing.T) {
 
 	sqlString = fmt.Sprintf("delete from %s.%s where a = 6", testSchema, testTable)
 	query = job.Query(sqlString)
-	var deleteResult Result
+	var deleteResult ResultWithoutData
 	err = query.Execute(&deleteResult)
 	if err != nil {
 		t.Error(err)

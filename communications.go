@@ -49,7 +49,7 @@ func createSqlRequest(id int64, sql string) ([]byte, error) {
 	})
 }
 
-type Result struct {
+type ResultWithoutData struct {
 	Id            string `json:"id"`
 	Success       bool   `json:"success"`
 	HasResults    bool   `json:"has_results"`
@@ -58,7 +58,7 @@ type Result struct {
 	Error         string `json:"error"`
 }
 
-type ResultWithData[data any] struct {
+type Result[data any] struct {
 	Id            string `json:"id"`
 	Success       bool   `json:"success"`
 	HasResults    bool   `json:"has_results"`
